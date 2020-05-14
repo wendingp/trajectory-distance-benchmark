@@ -1,78 +1,124 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>uq.dke.traminer</groupId>
-  <artifactId>trajectory-distances-benchmark</artifactId>
-  <name>trajectory-distances-benchmark</name>
-  <version>0.1</version>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-  <developers>
-    <developer>
-      <id>douglasapeixoto</id>
-      <name>Douglas Alves Peixoto</name>
-      <email>d.alvespeixoto@uq.edu.au</email>
-    </developer>
-  </developers>
-  
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>uq.dke.traminer</groupId>
+    <artifactId>trajectory-distances-benchmark</artifactId>
+    <name>trajectory-distances-benchmark</name>
+    <version>0.1</version>
 
-  <build>
-    <resources>
-      <resource>
-        <filtering>true</filtering>
-        <directory>src/main/java</directory>
-      </resource>
-      <resource>
-        <filtering>true</filtering>
-        <directory>src/main/resources</directory>
-      </resource>
-    </resources>
-    
-    <plugins>
-      <!-- use Java 8 -->
-      <plugin>
-        	<inherited>true</inherited>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-            	<source>1.8</source>
-            	<target>1.8</target>
-            </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
-    </dependency>
-    
-    <!-- Log4j Logger -->
-    <dependency>
-    	<groupId>log4j</groupId>
-    	<artifactId>log4j</artifactId>
-    	<version>1.2.17</version>
-	</dependency>
-		
-   	<!-- Traminer util library --> 
-	<dependency>
-    	<groupId>uq.dke.traminer</groupId>
-    	<artifactId>traminer-util-lib</artifactId>
-    	<version>0.1</version>
-	</dependency>
+    <developers>
+        <developer>
+            <id>douglasapeixoto</id>
+            <name>Douglas Alves Peixoto</name>
+            <email>d.alvespeixoto@uq.edu.au</email>
+        </developer>
+    </developers>
 
-   	<!-- Traminer IO library --> 
-	<dependency>
-    	<groupId>uq.dke.traminer</groupId>
-    	<artifactId>traminer-io-lib</artifactId>
-    	<version>0.1</version>
-	</dependency>     
-  </dependencies>
-  
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/java</directory>
+            </resource>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+
+        <plugins>
+            <!-- use Java 8 -->
+            <plugin>
+                <inherited>true</inherited>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Log4j Logger -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+        </dependency>
+
+        <!--   	&lt;!&ndash; Traminer util library &ndash;&gt; -->
+        <!--	<dependency>-->
+        <!--    	<groupId>uq.dke.traminer</groupId>-->
+        <!--    	<artifactId>traminer-util-lib</artifactId>-->
+        <!--    	<version>0.1</version>-->
+        <!--	</dependency>-->
+
+        <!--   	&lt;!&ndash; Traminer IO library &ndash;&gt; -->
+        <!--	<dependency>-->
+        <!--    	<groupId>uq.dke.traminer</groupId>-->
+        <!--    	<artifactId>traminer-io-lib</artifactId>-->
+        <!--    	<version>0.1</version>-->
+        <!--	</dependency>     -->
+
+        <dependency>
+            <groupId>org.graphstream</groupId>
+            <artifactId>gs-core</artifactId>
+            <version>1.3</version>
+            <optional>false</optional>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.jgrapht/jgrapht-core -->
+        <dependency>
+            <groupId>org.jgrapht</groupId>
+            <artifactId>jgrapht-core</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.graphhopper</groupId>
+            <artifactId>graphhopper-map-matching-core</artifactId>
+            <!-- or 0.10-SNAPSHOT for the unstable -->
+            <version>0.9.0</version>
+        </dependency>
+        <!--    <dependency>-->
+        <!--      <groupId>uq.dke.traminer</groupId>-->
+        <!--      <artifactId>trajectory-distances-benchmark</artifactId>-->
+        <!--      <version>0.1</version>-->
+        <!--    </dependency>-->
+
+        <!-- https://mvnrepository.com/artifact/com.graphhopper/graphhopper-core -->
+        <dependency>
+            <groupId>com.graphhopper</groupId>
+            <artifactId>graphhopper-core</artifactId>
+            <version>0.10.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.graphhopper/graphhopper-reader-osm -->
+        <dependency>
+            <groupId>com.graphhopper</groupId>
+            <artifactId>graphhopper-reader-osm</artifactId>
+            <version>0.10.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.spark/spark-core -->
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-core_2.12</artifactId>
+            <version>2.4.4</version>
+        </dependency>
+
+    </dependencies>
+
 </project>
