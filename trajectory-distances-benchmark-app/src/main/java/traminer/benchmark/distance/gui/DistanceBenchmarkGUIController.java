@@ -1,9 +1,8 @@
 package traminer.benchmark.distance.gui;
 
+import com.google.gson.Gson;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Scene;
@@ -13,7 +12,6 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
@@ -39,10 +37,9 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 /**
- * GUI controller class (JavaFX). Handle the events and components
- * // * of the GUI {@link TrajectoryDistancesScene.fxml}. Binds the GUI
- * of the GUI {@link DistanceBenchmarkScene.fxml}. Binds the GUI
- * components with the Java code.
+ * GUI controller class (JavaFX). Handle the events and components // * of the
+ * GUI {TrajectoryDistancesScene.fxml}. Binds the GUI of the GUI
+ * {DistanceBenchmarkScene.fxml}. Binds the GUI ? components with the Java code.
  *
  * @author douglasapeixoto
  */
@@ -127,19 +124,17 @@ public class DistanceBenchmarkGUIController implements Initializable {
     /**
      * Parameters window components
      **/
-    private Alert paramsWindow = new Alert(AlertType.INFORMATION);
-    private AnchorPane rootParams;
-    private ChoiceBox<String> ptsDistanceBox;
-    private Label paramALabel;
-    private Label paramBLabel;
-    private TextField paramATxt;
-    private TextField paramBTxt;
+    private final Alert paramsWindow = new Alert(AlertType.INFORMATION);
+    private AnchorPane rootParams = null;
+    private ChoiceBox<String> ptsDistanceBox = null;
+    private Label paramALabel = null;
+    private Label paramBLabel = null;
+    private TextField paramATxt = null;
+    private TextField paramBTxt = null;
 
     // Distance function to use - set default
-    private DistanceFunction distanceFuncName =
-            DistanceFunction.EUCLIDEAN;
-    private TrajectoryDistanceFunction trajectoryDistanceFunc =
-            new EDCDistanceCalculator();
+    private DistanceFunction distanceFuncName = DistanceFunction.EUCLIDEAN;
+    private TrajectoryDistanceFunction trajectoryDistanceFunc = new EDCDistanceCalculator();
 
     // Datasets to process
     private List<Trajectory> datasetA = null;
@@ -149,7 +144,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
     private long runningTime = 0;
 
     // Point distance functions
-    private static final String EUCLIDEAN = "EUCLIDEAN";  // (x, y)
+    private static final String EUCLIDEAN = "EUCLIDEAN"; // (x, y)
     private static final String GEOGRAPHIC = "GEOGRAPHIC"; // (lat, lon)
 
     // Sort options
@@ -161,6 +156,9 @@ public class DistanceBenchmarkGUIController implements Initializable {
     private static final String NONE = "NONE";
     private static final String MIN_MAX = "MIN-MAX";
     private static final String MEAN_STD = "MEAN-STD";
+
+    // gson
+    final static Gson gson = new Gson();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -188,118 +186,113 @@ public class DistanceBenchmarkGUIController implements Initializable {
         normalizationChoiceBox.getItems().add(MEAN_STD);
         normalizationChoiceBox.setValue(NONE);
         // feed Distance Function choice box
-        ObservableList<DistanceFunction> distanceFunctionList =
-                FXCollections.observableArrayList(DistanceFunction.values());
+        ObservableList<DistanceFunction> distanceFunctionList = FXCollections
+                .observableArrayList(DistanceFunction.values());
         distanceMeasureChoiceBox.setItems(distanceFunctionList);
         distanceMeasureChoiceBox.setValue(distanceFuncName);
     }
 
     /**
-     * Handle the action of setting up the distance function
-     * parameters on the dialog window.
+     * Handle the action of setting up the distance function parameters on the
+     * dialog window.
      */
     private void handleDistanceParametersSet() {
-        paramsWindow.setOnCloseRequest(new EventHandler<DialogEvent>() {
-            @Override
-            public void handle(DialogEvent event) {
-                // validate fields and create the distance measures
-                // get points distance measure
-                PointDistanceFunction pointDist = new EuclideanDistanceFunction();
-                if (ptsDistanceBox.getValue().equals(EUCLIDEAN)) {
-                    pointDist = new EuclideanDistanceFunction();
-                } else if (ptsDistanceBox.getValue().equals(GEOGRAPHIC)) {
-                    pointDist = new HaversineDistanceFunction();
-                }
-
-                try {
-                    switch (distanceFuncName) {
-                        case DISSIM:
-                            int increment = Integer.parseInt(paramATxt.getText());
-                            trajectoryDistanceFunc = new DISSIMDistanceCalculator(increment);
-                            break;
-
-                        case DTW:
-                            trajectoryDistanceFunc = new DTWDistanceCalculator(pointDist);
-                            break;
-
-                        case EDR:
-                            double edrThreshold = Double.parseDouble(paramATxt.getText());
-                            trajectoryDistanceFunc = new EDRDistanceCalculator(edrThreshold, pointDist);
-                            break;
-
-                        case EDwP:
-                            trajectoryDistanceFunc = new EDwPDistanceCalculator(pointDist);
-                            break;
-
-                        case ERP:
-                            double erpThreshold = Double.parseDouble(paramATxt.getText());
-                            trajectoryDistanceFunc = new ERPDistanceCalculator(erpThreshold);
-                            break;
-
-                        case EUCLIDEAN:
-                            trajectoryDistanceFunc = new EDCDistanceCalculator();
-                            break;
-
-                        case FRECHET:
-                            trajectoryDistanceFunc = new FrechetDistanceCalculator(pointDist);
-                            break;
-
-                        case LCSS:
-                            double lcssDistThreshold = Double.parseDouble(paramATxt.getText());
-                            int lcssTimeThreshold = Integer.parseInt(paramBTxt.getText());
-                            trajectoryDistanceFunc = new LCSSDistanceCalculator(
-                                    lcssDistThreshold, lcssTimeThreshold);
-                            break;
-
-                        case LIP:
-                            trajectoryDistanceFunc = new LIPDistanceCalculator(pointDist);
-                            break;
-
-                        case OWD:
-                            trajectoryDistanceFunc = new OWDDistanceCalculator(pointDist);
-                            break;
-
-                        case PDTW:
-                            double reductionRate = Double.parseDouble(paramATxt.getText());
-                            trajectoryDistanceFunc = new PDTWDistanceCalculator(reductionRate, pointDist);
-                            break;
-
-                        case STED:
-                            trajectoryDistanceFunc = new STEDDistanceCalculator(pointDist);
-                            break;
-
-                        case STLCSS:
-                            double stlcssDistThreshold = Double.parseDouble(paramATxt.getText());
-                            int stlcssTimeThreshold = Integer.parseInt(paramBTxt.getText());
-                            trajectoryDistanceFunc = new STLCSSDistanceCalculator(stlcssDistThreshold, stlcssTimeThreshold);
-                            break;
-
-                        case STLIP:
-                            double timePenalty = Double.parseDouble(paramATxt.getText());
-                            trajectoryDistanceFunc = new STLIPDistanceCalculator(timePenalty, pointDist);
-                            break;
-
-                        case TID:
-                            trajectoryDistanceFunc = new TIDDistanceCalculator(pointDist);
-                            break;
-                    }
-                } catch (IllegalArgumentException e) {
-                    event.consume(); // keep parameters window open
-                    showErrorMessage(e.getMessage());
-                }
-
-                // red message on main window
-                String paramsInfo = "Parameters: NONE";
-                if (paramATxt.isVisible()) {
-                    paramsInfo = paramALabel.getText() + " " + paramATxt.getText();
-                }
-                if (paramBTxt.isVisible()) {
-                    paramsInfo += ", " +
-                            paramBLabel.getText() + " " + paramBTxt.getText();
-                }
-                paramsInfoLabel.setText(paramsInfo);
-                System.out.println(paramsInfo);
+        paramsWindow.setOnCloseRequest(event -> {
+            // validate fields and create the distance measures
+            // get points distance measure
+            PointDistanceFunction pointDist = new EuclideanDistanceFunction();
+            if (ptsDistanceBox.getValue().equals(EUCLIDEAN)) {
+                pointDist = new EuclideanDistanceFunction();
+            } else if (ptsDistanceBox.getValue().equals(GEOGRAPHIC)) {
+                pointDist = new HaversineDistanceFunction();
             }
+
+            try {
+                switch (distanceFuncName) {
+                    case DISSIM:
+                        int increment = Integer.parseInt(paramATxt.getText());
+                        trajectoryDistanceFunc = new DISSIMDistanceCalculator(increment);
+                        break;
+
+                    case DTW:
+                        trajectoryDistanceFunc = new DTWDistanceCalculator(pointDist);
+                        break;
+
+                    case EDR:
+                        double edrThreshold = Double.parseDouble(paramATxt.getText());
+                        trajectoryDistanceFunc = new EDRDistanceCalculator(edrThreshold, pointDist);
+                        break;
+
+                    case EDwP:
+                        trajectoryDistanceFunc = new EDwPDistanceCalculator(pointDist);
+                        break;
+
+                    case ERP:
+                        double erpThreshold = Double.parseDouble(paramATxt.getText());
+                        trajectoryDistanceFunc = new ERPDistanceCalculator(erpThreshold);
+                        break;
+
+                    case EUCLIDEAN:
+                        trajectoryDistanceFunc = new EDCDistanceCalculator();
+                        break;
+
+                    case FRECHET:
+                        trajectoryDistanceFunc = new FrechetDistanceCalculator(pointDist);
+                        break;
+
+                    case LCSS:
+                        double lcssDistThreshold = Double.parseDouble(paramATxt.getText());
+                        int lcssTimeThreshold = Integer.parseInt(paramBTxt.getText());
+                        trajectoryDistanceFunc = new LCSSDistanceCalculator(lcssDistThreshold, lcssTimeThreshold);
+                        break;
+
+                    case LIP:
+                        trajectoryDistanceFunc = new LIPDistanceCalculator(pointDist);
+                        break;
+
+                    case OWD:
+                        trajectoryDistanceFunc = new OWDDistanceCalculator(pointDist);
+                        break;
+
+                    case PDTW:
+                        double reductionRate = Double.parseDouble(paramATxt.getText());
+                        trajectoryDistanceFunc = new PDTWDistanceCalculator(reductionRate, pointDist);
+                        break;
+
+                    case STED:
+                        trajectoryDistanceFunc = new STEDDistanceCalculator(pointDist);
+                        break;
+
+                    case STLCSS:
+                        double stlcssDistThreshold = Double.parseDouble(paramATxt.getText());
+                        int stlcssTimeThreshold = Integer.parseInt(paramBTxt.getText());
+                        trajectoryDistanceFunc = new STLCSSDistanceCalculator(stlcssDistThreshold, stlcssTimeThreshold);
+                        break;
+
+                    case STLIP:
+                        double timePenalty = Double.parseDouble(paramATxt.getText());
+                        trajectoryDistanceFunc = new STLIPDistanceCalculator(timePenalty, pointDist);
+                        break;
+
+                    case TID:
+                        trajectoryDistanceFunc = new TIDDistanceCalculator(pointDist);
+                        break;
+                }
+            } catch (IllegalArgumentException e) {
+                event.consume(); // keep parameters window open
+                showErrorMessage(e.getMessage());
+            }
+
+            // red message on main window
+            String paramsInfo = "Parameters: NONE";
+            if (paramATxt.isVisible()) {
+                paramsInfo = paramALabel.getText() + " " + paramATxt.getText();
+            }
+            if (paramBTxt.isVisible()) {
+                paramsInfo += ", " + paramBLabel.getText() + " " + paramBTxt.getText();
+            }
+            paramsInfoLabel.setText(paramsInfo);
+            System.out.println(paramsInfo);
         });
     }
 
@@ -307,17 +300,14 @@ public class DistanceBenchmarkGUIController implements Initializable {
      * Handle the action of selecting the normalization method
      */
     private void handleNormalizationChoice() {
-        normalizationChoiceBox.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                final String normalization = normalizationChoiceBox.getValue();
-                if (normalization.equals(MIN_MAX)) {
-                    normalizationMinTxt.setDisable(false);
-                    normalizationMaxTxt.setDisable(false);
-                } else {
-                    normalizationMinTxt.setDisable(true);
-                    normalizationMaxTxt.setDisable(true);
-                }
+        normalizationChoiceBox.setOnAction(event -> {
+            final String normalization = normalizationChoiceBox.getValue();
+            if (normalization.equals(MIN_MAX)) {
+                normalizationMinTxt.setDisable(false);
+                normalizationMaxTxt.setDisable(false);
+            } else {
+                normalizationMinTxt.setDisable(true);
+                normalizationMaxTxt.setDisable(true);
             }
         });
     }
@@ -326,23 +316,13 @@ public class DistanceBenchmarkGUIController implements Initializable {
      * Handle the action of selecting the distance function
      */
     private void handleDistanceFunctionChoice() {
-        paramsInfoLabel.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                showDistanceParamsWindow();
-            }
-        });
-        distanceMeasureChoiceBox.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                showDistanceParamsWindow();
-            }
-        });
+        paramsInfoLabel.setOnMouseClicked(event -> showDistanceParamsWindow());
+        distanceMeasureChoiceBox.setOnAction(event -> showDistanceParamsWindow());
     }
 
     /**
-     * Show the popup window to set up the currently selected
-     * distance function parameters
+     * Show the popup window to set up the currently selected distance function
+     * parameters
      */
     private void showDistanceParamsWindow() {
         distanceFuncName = distanceMeasureChoiceBox.getValue();
@@ -368,6 +348,20 @@ public class DistanceBenchmarkGUIController implements Initializable {
                 break;
 
             case DTW:
+
+            case TID:
+
+            case STED:
+
+            case OWD:
+
+            case LIP:
+
+            case FRECHET:
+
+            case EUCLIDEAN:
+
+            case EDwP:
                 ptsDistanceBox.setDisable(false);
                 break;
 
@@ -378,51 +372,13 @@ public class DistanceBenchmarkGUIController implements Initializable {
                 paramATxt.setVisible(true);
                 break;
 
-            case EDwP:
-                ptsDistanceBox.setDisable(false);
-                break;
-
             case ERP:
                 paramALabel.setText("Distance Threshold:");
                 paramATxt.setText("0.0");
                 paramATxt.setVisible(true);
                 break;
 
-            case EUCLIDEAN:
-                ptsDistanceBox.setDisable(false);
-                break;
-
-            case FRECHET:
-                ptsDistanceBox.setDisable(false);
-                break;
-
             case LCSS:
-                paramALabel.setText("Distance Threshold:");
-                paramATxt.setText("0.001");
-                paramATxt.setVisible(true);
-                paramBLabel.setText("Time Threshold:");
-                paramBTxt.setText("1");
-                paramBTxt.setVisible(true);
-                break;
-
-            case LIP:
-                ptsDistanceBox.setDisable(false);
-                break;
-
-            case OWD:
-                ptsDistanceBox.setDisable(false);
-                break;
-
-            case PDTW:
-                ptsDistanceBox.setDisable(false);
-                paramALabel.setText("Reduction Rate:");
-                paramATxt.setText("3");
-                paramATxt.setVisible(true);
-                break;
-
-            case STED:
-                ptsDistanceBox.setDisable(false);
-                break;
 
             case STLCSS:
                 paramALabel.setText("Distance Threshold:");
@@ -433,15 +389,18 @@ public class DistanceBenchmarkGUIController implements Initializable {
                 paramBTxt.setVisible(true);
                 break;
 
+            case PDTW:
+                ptsDistanceBox.setDisable(false);
+                paramALabel.setText("Reduction Rate:");
+                paramATxt.setText("3");
+                paramATxt.setVisible(true);
+                break;
+
             case STLIP:
                 ptsDistanceBox.setDisable(false);
                 paramALabel.setText("Time Penalty:");
                 paramATxt.setText("0.5");
                 paramATxt.setVisible(true);
-                break;
-
-            case TID:
-                ptsDistanceBox.setDisable(false);
                 break;
         }
         // show parameters configuration popup
@@ -451,7 +410,8 @@ public class DistanceBenchmarkGUIController implements Initializable {
     @FXML
     private void actionStart() {
         // check mandatory fields
-        if (!isValid()) return;
+        if (!isValid())
+            return;
 
         // read datasets
         String dataPath1 = inputDataTxt1.getText();
@@ -469,16 +429,16 @@ public class DistanceBenchmarkGUIController implements Initializable {
             e.printStackTrace();
         }
 
-        // run required transformations on each dataset
+        // run required transformations on each dataset ?
         doTransformations();
 
         // run distances
         List<DistancePair> distancePairs = getDistances();
 
-        // Normalize distances
+        // Normalize distances TODO what?
         distancePairs = doNormalization(distancePairs);
 
-        // sort results
+        // sort results TODO what?
         doSort(distancePairs);
 
         // save results
@@ -491,8 +451,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
     private void actionOpenDataset1() {
         final DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Open Input Dataset A");
-        final File selectedDir = dirChooser.showDialog(
-                rootPane.getScene().getWindow());
+        final File selectedDir = dirChooser.showDialog(rootPane.getScene().getWindow());
         if (selectedDir != null) {
             String dataPath = selectedDir.getAbsolutePath();
             inputDataTxt1.setText(dataPath);
@@ -504,8 +463,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
     private void actionOpenDataset2() {
         final DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Open Input Dataset B");
-        final File selectedDir = dirChooser.showDialog(
-                rootPane.getScene().getWindow());
+        final File selectedDir = dirChooser.showDialog(rootPane.getScene().getWindow());
         if (selectedDir != null) {
             String dataPath = selectedDir.getAbsolutePath();
             inputDataTxt2.setText(dataPath);
@@ -517,8 +475,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
     private void actionOpenOutputData() {
         final DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Open Output Directory");
-        final File selectedDir = dirChooser.showDialog(
-                rootPane.getScene().getWindow());
+        final File selectedDir = dirChooser.showDialog(rootPane.getScene().getWindow());
         if (selectedDir != null) {
             String dataPath = selectedDir.getAbsolutePath();
             outputDataTxt.setText(dataPath);
@@ -550,56 +507,32 @@ public class DistanceBenchmarkGUIController implements Initializable {
 
     @FXML
     private void actionAddPointsCheck2() {
-        if (addPointsCheck2.isSelected()) {
-            addPointsRateTxt2.setDisable(false);
-        } else {
-            addPointsRateTxt2.setDisable(true);
-        }
+        addPointsRateTxt2.setDisable(!addPointsCheck2.isSelected());
     }
 
     @FXML
     private void actionRemovePointsCheck2() {
-        if (removePointsCheck2.isSelected()) {
-            removePointsRateTxt2.setDisable(false);
-        } else {
-            removePointsRateTxt2.setDisable(true);
-        }
+        removePointsRateTxt2.setDisable(!removePointsCheck2.isSelected());
     }
 
     @FXML
     private void actionSamplingRateCheck2() {
-        if (samplingRateCheck2.isSelected()) {
-            samplingRateTxt2.setDisable(false);
-        } else {
-            samplingRateTxt2.setDisable(true);
-        }
+        samplingRateTxt2.setDisable(!samplingRateCheck2.isSelected());
     }
 
     @FXML
     private void actionScaleCheck2() {
-        if (scaleCheck2.isSelected()) {
-            scaleRateTxt2.setDisable(false);
-        } else {
-            scaleRateTxt2.setDisable(true);
-        }
+        scaleRateTxt2.setDisable(!scaleCheck2.isSelected());
     }
 
     @FXML
     private void actionTimeShiftCheck2() {
-        if (timeShiftCheck2.isSelected()) {
-            timeShiftStartTxt2.setDisable(false);
-        } else {
-            timeShiftStartTxt2.setDisable(true);
-        }
+        timeShiftStartTxt2.setDisable(!timeShiftCheck2.isSelected());
     }
 
     @FXML
     private void actionRotationCheck2() {
-        if (rotationCheck2.isSelected()) {
-            rotationAngleTxt2.setDisable(false);
-        } else {
-            rotationAngleTxt2.setDisable(true);
-        }
+        rotationAngleTxt2.setDisable(!rotationCheck2.isSelected());
     }
 
     @FXML
@@ -614,8 +547,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
     }
 
     /**
-     * Open and show the content of an HTML file
-     * in a browser-like window.
+     * Open and show the content of an HTML file in a browser-like window.
      *
      * @see HelpBrowser
      */
@@ -624,12 +556,8 @@ public class DistanceBenchmarkGUIController implements Initializable {
         // HTML file must be inside the application's resources folder.
         final String helpHtmlFile = "app-help-index.html";
         try {
-            String helpContent = IOService.
-                    readResourcesFileContent(helpHtmlFile);
-            Scene scene = new Scene(
-                    new HelpBrowser(helpContent, 750, 500),
-                    Color.web("#666970"));
-            ;
+            String helpContent = IOService.readResourcesFileContent(helpHtmlFile);
+            Scene scene = new Scene(new HelpBrowser(helpContent, 750, 500), Color.web("#666970"));
             Stage outputStage = new Stage();
             outputStage.setTitle("Trajectory Distances Help");
             outputStage.setScene(scene);
@@ -673,48 +601,43 @@ public class DistanceBenchmarkGUIController implements Initializable {
         paramBTxt.setPrefWidth(100.0);
 
         rootParams = new AnchorPane();
-        rootParams.getChildren().addAll(ptsDistLabel, ptsDistanceBox,
-                paramALabel, paramBLabel, paramATxt, paramBTxt);
+        rootParams.getChildren().addAll(ptsDistLabel, ptsDistanceBox, paramALabel, paramBLabel, paramATxt, paramBTxt);
     }
 
     // This should be in the Model
 
     /**
-     * Load the trajectory dataset in the given path as
-     * a Stream of trajectory objects.
+     * Load the trajectory dataset in the given path as a Stream of trajectory
+     * objects.
      *
      * @param dataPath Path to trajectory dataset.
      * @return The dataset as a trajectory list.
      * @throws IOException If file not found.
      */
     private List<Trajectory> load(String dataPath) throws IOException {
-        final String dataFormat = IOService.readResourcesFileContent(
-                "trajectory-data-format.tddf");
-        return TrajectoryReader.readAsStream(dataPath, dataFormat, false, 1)
-                .collect(Collectors.toList());
+        final String dataFormat = IOService.readResourcesFileContent("trajectory-data-format.tddf");
+        return TrajectoryReader.readAsStream(dataPath, dataFormat, false, 1).collect(Collectors.toList());
     }
 
     // This should be in the Model
 
     /**
-     * Calculates the distances between every trajectory in the
-     * Dataset-A to every trajectory in the Dataset-B.
+     * Calculates the distances between every trajectory in the Dataset-A to every
+     * trajectory in the Dataset-B.
      *
-     * @return A list of distances pairs, containing a pair of
-     * trajectories IDs and their distance, the result list
-     * contains (list1.size * list2.size) elements.
+     * @return A list of distances pairs, containing a pair of trajectories IDs and
+     *         their distance, the result list contains (list1.size * list2.size)
+     *         elements.
      */
     private List<DistancePair> getDistances() {
-        List<DistancePair> distancePairs =
-                new ArrayList<>(datasetA.size() * datasetB.size());
-        double distance;
+        List<DistancePair> distancePairs = new ArrayList<>(datasetA.size() * datasetB.size());
 
         final long startTime = System.currentTimeMillis();
         for (Trajectory t1 : datasetA) {
             String tid1 = t1.getId();
             for (Trajectory t2 : datasetB) {
                 String tid2 = t2.getId();
-                distance = trajectoryDistanceFunc.getDistance(t1, t2);
+                double distance = trajectoryDistanceFunc.getDistance(t1, t2);
                 distancePairs.add(new DistancePair(tid1, tid2, distance));
             }
         }
@@ -727,80 +650,75 @@ public class DistanceBenchmarkGUIController implements Initializable {
     // This should be in the Model
 
     /**
-     * Run the required transformations on each dataset.
-     * Several transformations may be performed on each
-     * dataset.
+     * Run the required transformations on each dataset. Several transformations may
+     * be performed on each dataset.
      */
     private void doTransformations() {
+        System.out.println("Before transform:");
+        System.out.println(gson.toJson(datasetA));
+        System.out.println(gson.toJson(datasetB));
         try {
             // add noise transformation
             if (addNoiseCheck2.isSelected()) {
                 double noiseRate = Double.parseDouble(addNoiseRateTxt2.getText());
                 double noiseDist = Double.parseDouble(addNoiseDistanceTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .addNoise(datasetB, noiseRate, noiseDist);
+                datasetB = TrajectoryTransformationService.addNoise(datasetB, noiseRate, noiseDist);
             }
             // shift points transformation
             if (shiftPointsCheck2.isSelected()) {
                 double rate = Double.parseDouble(shiftPointsRateTxt2.getText());
                 double dist = Double.parseDouble(shiftPointsDistanceTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .shiftPoints(datasetB, rate, dist);
+                datasetB = TrajectoryTransformationService.shiftPoints(datasetB, rate, dist);
             }
             // add points transformation
             if (addPointsCheck2.isSelected()) {
                 double rate = Double.parseDouble(addPointsRateTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .addPoints(datasetB, rate);
+                datasetB = TrajectoryTransformationService.addPoints(datasetB, rate);
             }
             // remove points transformation
             if (removePointsCheck2.isSelected()) {
                 double rate = Double.parseDouble(removePointsRateTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .removePoints(datasetB, rate);
+                datasetB = TrajectoryTransformationService.removePoints(datasetB, rate);
             }
             // change sampling rate transformation
             if (samplingRateCheck2.isSelected()) {
                 int rate = Integer.parseInt(samplingRateTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .samplingRate(datasetB, rate);
+                datasetB = TrajectoryTransformationService.samplingRate(datasetB, rate);
             }
             // change scale transformation
             if (scaleCheck2.isSelected()) {
                 double rate = Double.parseDouble(scaleRateTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .scale(datasetB, rate);
+                datasetB = TrajectoryTransformationService.scale(datasetB, rate);
             }
             // shift time transformation
             if (timeShiftCheck2.isSelected()) {
                 int startTime = Integer.parseInt(timeShiftStartTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .shiftTime(datasetB, startTime);
+                datasetB = TrajectoryTransformationService.shiftTime(datasetB, startTime);
             }
             // rotation transformation
             if (rotationCheck2.isSelected()) {
                 double angle = Double.parseDouble(rotationAngleTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .rotate(datasetB, angle);
+                datasetB = TrajectoryTransformationService.rotate(datasetB, angle);
             }
             // translation transformation
             if (translationCheck2.isSelected()) {
                 double x = Double.parseDouble(translationXTxt2.getText());
                 double y = Double.parseDouble(translationYTxt2.getText());
-                datasetB = TrajectoryTransformationService
-                        .translate(datasetB, x, y);
-
+                datasetB = TrajectoryTransformationService.translate(datasetB, x, y);
             }
         } catch (IllegalArgumentException e) {
             showErrorMessage("In Dataset B parameters.\n" + e.getMessage());
             e.printStackTrace();
         }
+        System.out.println("After transform:");
+        System.out.println(gson.toJson(datasetA));
+        System.out.println(gson.toJson(datasetB));
     }
 
     // This should be in the Model
 
     /**
-     * Sorts the list of disntace pairs using the user-specified parameter.
+     * Sorts the list of distance pairs using the user-specified parameter.
      *
      * @param distancePairs The list to sort.
      */
@@ -808,13 +726,13 @@ public class DistanceBenchmarkGUIController implements Initializable {
         final String sortOption = sortResultsChoiceBox.getValue();
         switch (sortOption) {
             case DATASET_A:
-                distancePairs.sort(DistancePair.ID_1_COMPARATOR);
+                distancePairs.sort(DistancePair.id1Comparator);
                 break;
             case DATASET_B:
                 distancePairs.sort(DistancePair.ID_2_COMPARATOR);
                 break;
             case DISTANCE:
-                distancePairs.sort(DistancePair.DISTANCE_COMPARATOR);
+                distancePairs.sort(DistancePair.distanceComparator);
                 break;
         }
     }
@@ -831,7 +749,8 @@ public class DistanceBenchmarkGUIController implements Initializable {
         final String normalizationOption = normalizationChoiceBox.getValue();
 
         // nothing to do
-        if (normalizationOption.equals(NONE)) return distancePairs;
+        if (normalizationOption.equals(NONE))
+            return distancePairs;
 
         // get the distances values
         List<Double> distances = new ArrayList<>(distancePairs.size());
@@ -839,21 +758,21 @@ public class DistanceBenchmarkGUIController implements Initializable {
             distances.add(pair.getDistance());
         }
 
-        // MIN-MAX normalization
-//        if (normalizationOption.equals(MIN_MAX)) {
-//            double min;
-//            double max;
-//            try {
-//                min = Double.parseDouble(normalizationMinTxt.getText());
-//                max = Double.parseDouble(normalizationMaxTxt.getText());
-//                distances = SpatialUtils.minMaxNormalization(distances, min, max);
-//            } catch (IllegalArgumentException e) {
-//                showErrorMessage("Invalid values for Min/Max normalization.");
-//            }
-//        } else if (normalizationOption.equals(MEAN_STD)) {
-//            // MEAN-STD - Z-scores normalization
-//            distances = SpatialUtils.meanStdNormalization(distances);
-//        }
+        // MIN-MAX normalization WARNING no such in jar
+        // if (normalizationOption.equals(MIN_MAX)) {
+        // double min;
+        // double max;
+        // try {
+        // min = Double.parseDouble(normalizationMinTxt.getText());
+        // max = Double.parseDouble(normalizationMaxTxt.getText());
+        // distances = SpatialUtils.minMaxNormalization(distances, min, max);
+        // } catch (IllegalArgumentException e) {
+        // showErrorMessage("Invalid values for Min/Max normalization.");
+        // }
+        // } else if (normalizationOption.equals(MEAN_STD)) {
+        // // MEAN-STD - Z-scores normalization
+        // distances = SpatialUtils.meanStdNormalization(distances);
+        // }
 
         // update values
         List<DistancePair> newPairs = new ArrayList<>(distancePairs.size());
@@ -952,8 +871,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
     private void actionOpenChartData() {
         final FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open Distances Data File");
-        final File selectedFile = fileChooser.showOpenDialog(
-                rootPane.getScene().getWindow());
+        final File selectedFile = fileChooser.showOpenDialog(rootPane.getScene().getWindow());
         if (selectedFile != null) {
             String dataPath = selectedFile.getAbsolutePath();
             chartDataPathTxt.setText(dataPath);
@@ -974,7 +892,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
             List<String> chartData = IOService.readFile(dataPath);
 
             // create a new series for every input data file
-            XYChart.Series<String, Number> series = new XYChart.Series<String, Number>();
+            XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName(seriesName);
 
             // add data values to chart series
@@ -985,7 +903,7 @@ public class DistanceBenchmarkGUIController implements Initializable {
                 xVal = vals[0] + "-" + vals[1];
                 yVal = Double.parseDouble(vals[2]);
                 // add to chart series
-                series.getData().add(new XYChart.Data<String, Number>(xVal, yVal));
+                series.getData().add(new XYChart.Data<>(xVal, yVal));
             }
 
             // add series to chart

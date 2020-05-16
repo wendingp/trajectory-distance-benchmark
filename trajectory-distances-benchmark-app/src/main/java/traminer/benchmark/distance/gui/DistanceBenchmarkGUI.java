@@ -10,8 +10,8 @@ import traminer.io.log.LogWriter;
 import java.io.IOException;
 
 /**
- * Starts the GUI and binds the GUI Window with
- * the FXML scene (JavaFX). GUI start point class.
+ * Starts the GUI and binds the GUI Window with the FXML scene (JavaFX). GUI
+ * start point class.
  *
  * @author douglasapeixoto
  */
@@ -22,13 +22,13 @@ public class DistanceBenchmarkGUI extends Application {
         try {
             Parent root = FXMLLoader.load(getClass().getResource("DistanceBenchmarkScene.fxml"));
 
-            Scene mainScence = new Scene(root);
+            Scene mainScene = new Scene(root);
 
-            stage.setTitle("Trajectory Distances Benchmark App");
-            stage.setScene(mainScence);
+            stage.setTitle("Trajectory Distances Benchmark App - Modified by Wending");
+            stage.setScene(mainScene);
             stage.setHeight(580.0);
             stage.setWidth(940.0);
-            stage.setResizable(false);
+            stage.setResizable(true);
             stage.show();
         } catch (IOException e) {
             System.err.println("Error starting GUI.");
